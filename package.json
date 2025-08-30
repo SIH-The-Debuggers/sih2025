@@ -1,0 +1,30 @@
+{
+  "name": "sih2025",
+  "version": "1.0.0",
+  "description": "This is for SIH 2025.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devSuryansh/sih2025.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/devSuryansh/sih2025/issues"
+  },
+  "homepage": "https://github.com/devSuryansh/sih2025#readme",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ignition": "^3.0.1",
+    "@nomicfoundation/hardhat-toolbox-viem": "^5.0.0",
+    "@types/node": "^22.18.0",
+    "forge-std": "github:foundry-rs/forge-std#v1.9.4",
+    "hardhat": "^3.0.3",
+    "typescript": "~5.8.0",
+    "viem": "^2.36.0"
+  }
+}
