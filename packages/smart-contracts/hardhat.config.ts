@@ -3,6 +3,9 @@ import type { HardhatUserConfig } from "hardhat/config";
 import hardhatToolboxViemPlugin from "@nomicfoundation/hardhat-toolbox-viem";
 import { configVariable } from "hardhat/config";
 
+// Import tasks
+import "./tasks/dtid";
+
 const config: HardhatUserConfig = {
   plugins: [hardhatToolboxViemPlugin],
   solidity: {
@@ -35,6 +38,14 @@ const config: HardhatUserConfig = {
       chainType: "l1",
       url: configVariable("SEPOLIA_RPC_URL"),
       accounts: [configVariable("SEPOLIA_PRIVATE_KEY")],
+    },
+    polygonAmoy: {
+      type: "http",
+      url: configVariable(
+        "POLYGON_AMOY_RPC_URL",
+        "https://rpc-amoy.polygon.technology/"
+      ),
+      accounts: [configVariable("PRIVATE_KEY")],
     },
   },
 };

@@ -1,0 +1,59 @@
+{
+  "name": "Tourist Safe - Digital ID & Emergency Response",
+  "short_name": "Tourist Safe",
+  "description": "Secure digital identification and emergency response system for tourists",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "categories": ["travel", "safety", "utilities"],
+  "screenshots": [
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Emergency",
+      "short_name": "Emergency",
+      "description": "Quick access to emergency features",
+      "url": "/emergency",
+      "icons": [
+        {
+          "src": "/emergency-icon.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Digital ID",
+      "short_name": "ID",
+      "description": "Show your digital tourist ID",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/id-icon.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}

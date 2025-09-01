@@ -1,135 +1,224 @@
-# Turborepo starter
+# 🛡️ Smart Tourist Safety Platform
 
-This Turborepo starter is maintained by the Turborepo core team.
+**A comprehensive real-time safety platform for tourists and law enforcement built for Smart India Hackathon 2025**
 
-## Using this example
+## 🌟 Overview
 
-Run the following command:
+The Smart Tourist Safety Platform is a complete ecosystem designed to enhance tourist safety through real-time monitoring, emergency response, and seamless communication between tourists and law enforcement agencies.
 
-```sh
-npx create-turbo@latest
+### 🎯 Key Features
+
+- **🆔 Digital Tourist ID**: QR code-based identification system
+- **🚨 Panic Button**: One-touch emergency alerts with real-time location
+- **👮 Police Dashboard**: Live monitoring and response interface
+- **📱 Mobile App**: Background location tracking and offline emergency features
+- **🌍 Multi-language Support**: 10+ languages with full internationalization
+- **🗺️ Real-time Mapping**: Live tourist locations and incident tracking
+- **⚡ WebSocket Integration**: Real-time updates and notifications
+
+## 🏗️ Architecture
+
+### Frontend Applications
+
+| Application          | Port | Purpose                   | Status         |
+| -------------------- | ---- | ------------------------- | -------------- |
+| **Tourist Web App**  | 3000 | Tourist-facing interface  | ✅ Complete    |
+| **Police Dashboard** | 3001 | Law enforcement interface | ✅ Complete    |
+| **Mobile App**       | -    | Expo React Native app     | 🔄 In Progress |
+
+### Backend Services
+
+| Service              | Port | Purpose                 | Status          |
+| -------------------- | ---- | ----------------------- | --------------- |
+| **NestJS API**       | 3333 | RESTful API server      | 🔄 In Progress  |
+| **WebSocket Server** | 3334 | Real-time communication | ⏳ Planned      |
+| **Database**         | 5432 | PostgreSQL + PostGIS    | ✅ Schema Ready |
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- **Node.js** 18+
+- **Bun** 1.2+ (package manager)
+- **PostgreSQL** with PostGIS extension
+- **Redis** (for caching and queues)
+
+### Installation
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd sih2025
+
+# Install dependencies
+bun install
+
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your configuration
+
+# Set up database
+bun run db:push
+bun run db:seed
 ```
 
-## What's inside?
+### Development
 
-This Turborepo includes the following packages/apps:
+```bash
+# Start all applications in development mode
+bun run dev
 
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+# Or start individual applications:
+bun run dev --filter=web     # Tourist frontend (port 3000)
+bun run dev --filter=police  # Police dashboard (port 3001)
+bun run dev --filter=backend # NestJS API (port 3333)
 ```
 
-You can build a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+### Database Commands
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
+```bash
+bun run db:generate  # Generate Prisma client
+bun run db:push      # Push schema to database
+bun run db:migrate   # Run migrations
+bun run db:seed      # Seed initial data
+bun run db:studio    # Open Prisma Studio
 ```
 
-### Develop
+## 📋 MVP Feature Status
 
-To develop all apps and packages, run the following command:
+### ✅ Completed Features
 
+#### Tourist Frontend (Port 3000)
+
+- [x] Digital ID generation with QR codes
+- [x] Emergency contacts management
+- [x] Panic button with location sharing
+- [x] Multi-language support (10+ languages)
+- [x] Profile management
+- [x] Responsive design with Tailwind CSS
+
+#### Police Dashboard (Port 3001)
+
+- [x] Real-time alerts panel
+- [x] Interactive map with Mapbox integration
+- [x] Alert severity indicators
+- [x] Officer dashboard with statistics
+- [x] Responsive layout for all devices
+
+#### Database Schema
+
+- [x] User management (tourists and police)
+- [x] Geospatial location tracking
+- [x] Alert system with severity levels
+- [x] Emergency contacts and safety tips
+- [x] PostGIS integration for location queries
+
+### 🔄 In Progress
+
+#### Backend API (Port 3333)
+
+- [ ] JWT authentication system
+- [ ] RESTful API endpoints
+- [ ] WebSocket server for real-time updates
+- [ ] Alert processing and notifications
+- [ ] File upload handling
+
+#### Mobile App
+
+- [ ] Expo React Native setup
+- [ ] Background location tracking
+- [ ] Push notifications
+- [ ] Offline emergency features
+
+### ⏳ Planned Features
+
+- [ ] Advanced analytics dashboard
+- [ ] Incident reporting system
+- [ ] Route sharing and tracking
+- [ ] Emergency services integration
+- [ ] Multi-tenant support
+
+## 🛠️ Technology Stack
+
+### Frontend
+
+- **Next.js 15** - React framework with App Router
+- **TypeScript** - Type-safe development
+- **Tailwind CSS** - Utility-first styling
+- **next-intl** - Internationalization
+- **React Query** - Data fetching and caching
+- **ShadCN UI** - Modern component library
+
+### Backend
+
+- **NestJS** - Enterprise Node.js framework
+- **Prisma** - Type-safe database ORM
+- **PostgreSQL** - Primary database
+- **PostGIS** - Geospatial database extension
+- **Redis** - Caching and session storage
+- **Socket.IO** - Real-time communication
+- **JWT** - Authentication tokens
+
+### Mobile
+
+- **Expo** - React Native development platform
+- **React Native** - Cross-platform mobile development
+- **Expo Location** - Background location tracking
+- **Expo Notifications** - Push notifications
+
+### DevOps
+
+- **Turborepo** - Monorepo build system
+- **Docker** - Containerization
+- **GitHub Actions** - CI/CD pipeline
+- **Vercel** - Frontend deployment
+
+## 🌍 Environment Configuration
+
+Key environment variables needed:
+
+```env
+# Database
+DATABASE_URL="postgresql://user:pass@localhost:5432/db"
+
+# Authentication
+JWT_SECRET="your-secret-key"
+
+# Map Services
+NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN="your-mapbox-token"
+
+# API URLs
+NEXT_PUBLIC_API_URL="http://localhost:3333/api"
+NEXT_PUBLIC_WS_URL="ws://localhost:3334"
+
+# Redis
+REDIS_URL="redis://localhost:6379"
 ```
-cd my-turborepo
 
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
+## 🔒 Security Features
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
-```
+- **JWT Authentication** - Secure token-based auth
+- **Rate Limiting** - API abuse prevention
+- **CORS Protection** - Cross-origin security
+- **Input Validation** - Data sanitization
+- **Encrypted Storage** - Sensitive data protection
 
-You can develop a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+## 🤝 Contributing
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
+## 🏆 Team
 
-### Remote Caching
+Built with ❤️ for Smart India Hackathon 2025
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+---
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+**Live Demo**:
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+- Tourist App: http://localhost:3000
+- Police Dashboard: http://localhost:3001
+- API Documentation: http://localhost:3333/api/docs

@@ -1,0 +1,519 @@
+// Smart Tourist Safety Platform - Database Schema
+// Optimized for PostgreSQL + PostGIS
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =====================================================
+// CORE USER MANAGEMENT
+// =====================================================
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  phone     String?  @unique
+  role      Role     @default(TOURIST)
+  status    UserStatus @default(ACTIVE)
+  lastLogin DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  touristProfile TouristProfile?
+  policeProfile  PoliceProfile?
+  verifierProfile VerifierProfile?
+  auditLogs     AuditLog[]
+
+  @@map("users")
+  @@index([email])
+  @@index([role, status])
+}
+
+enum Role {
+  TOURIST
+  POLICE
+  VERIFIER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  INACTIVE
+}
+
+// =====================================================
+// TOURIST PROFILE & IDENTITY
+// =====================================================
+
+model TouristProfile {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  name          String
+  dateOfBirth   DateTime?
+  nationality   String?
+  documentType  String    // "passport" | "license" | "aadhaar_mock"
+  documentRef   String    // last4 digits or masked ID
+  didUri        String    @unique // Decentralized Identifier
+  encryptedPII  Bytes     // AES-GCM encrypted JSON blob
+  kycStatus     KYCStatus @default(PENDING)
+  kycVerifiedAt DateTime?
+  consentTracking Boolean @default(false)
+  consentAnalytics Boolean @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relationships
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trips           Trip[]
+  digitalIds      DigitalID[]
+  emergencyContacts EmergencyContact[]
+  locationPings   LocationPing[]
+  alerts          Alert[]
+
+  @@map("tourist_profiles")
+  @@index([didUri])
+  @@index([kycStatus])
+  @@index([consentTracking])
+}
+
+enum KYCStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+  EXPIRED
+}
+
+model EmergencyContact {
+  id          String  @id @default(cuid())
+  touristId   String
+  name        String
+  phone       String
+  email       String?
+  relationship String
+  priority    Int     @default(1) // 1 = primary, 2 = secondary
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+
+  tourist TouristProfile @relation(fields: [touristId], references: [id], onDelete: Cascade)
+
+  @@map("emergency_contacts")
+  @@index([touristId, priority])
+}
+
+// =====================================================
+// TRIP MANAGEMENT
+// =====================================================
+
+model Trip {
+  id          String    @id @default(cuid())
+  touristId   String
+  title       String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  origin      String    // Starting location
+  destination String    // End location
+  itinerary   Json      // GeoJSON FeatureCollection of waypoints
+  status      TripStatus @default(PLANNED)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relationships
+  tourist     TouristProfile @relation(fields: [touristId], references: [id], onDelete: Cascade)
+  digitalIds  DigitalID[]
+
+  @@map("trips")
+  @@index([touristId, status])
+  @@index([startDate, endDate])
+}
+
+enum TripStatus {
+  PLANNED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+// =====================================================
+// DIGITAL IDENTITY & BLOCKCHAIN
+// =====================================================
+
+model DigitalID {
+  id          String   @id @default(cuid())
+  touristId   String
+  tripId      String?
+  anchorHash  String   @unique // Blockchain anchor hash
+  qrPayload   String   // JWS token for QR code
+  validFrom   DateTime
+  validTo     DateTime
+  isRevoked   Boolean  @default(false)
+  blockchainTx String? // Transaction hash
+  createdAt   DateTime @default(now())
+
+  // Relationships
+  tourist TouristProfile @relation(fields: [touristId], references: [id], onDelete: Cascade)
+  trip    Trip?          @relation(fields: [tripId], references: [id])
+  verifications Verification[]
+
+  @@map("digital_ids")
+  @@index([anchorHash])
+  @@index([touristId, validFrom, validTo])
+  @@index([isRevoked])
+}
+
+model Verification {
+  id          String   @id @default(cuid())
+  digitalIdId String
+  verifierId  String
+  location    String?
+  metadata    Json?    // Additional verification data
+  verifiedAt  DateTime @default(now())
+
+  digitalId DigitalID       @relation(fields: [digitalIdId], references: [id])
+  verifier  VerifierProfile @relation(fields: [verifierId], references: [id])
+
+  @@map("verifications")
+  @@index([digitalIdId])
+  @@index([verifierId])
+  @@index([verifiedAt])
+}
+
+// =====================================================
+// GEOSPATIAL & LOCATION TRACKING
+// =====================================================
+
+model LocationPing {
+  id          String   @id @default(cuid())
+  touristId   String
+  latitude    Float
+  longitude   Float
+  altitude    Float?
+  speed       Float?   // m/s
+  accuracy    Float?   // meters
+  bearing     Float?   // degrees
+  timestamp   DateTime
+  metadata    Json?    // Additional sensor data
+  createdAt   DateTime @default(now())
+
+  // Note: Add PostGIS geometry column via raw SQL migration
+  // ALTER TABLE location_pings ADD COLUMN geom geometry(Point, 4326);
+  // CREATE INDEX idx_location_pings_geom ON location_pings USING GIST(geom);
+
+  tourist TouristProfile @relation(fields: [touristId], references: [id], onDelete: Cascade)
+
+  @@map("location_pings")
+  @@index([touristId, timestamp])
+  @@index([timestamp])
+}
+
+model RiskZone {
+  id          String       @id @default(cuid())
+  name        String
+  description String?
+  level       RiskLevel
+  geometry    Json         // GeoJSON Polygon or MultiPolygon
+  isActive    Boolean      @default(true)
+  metadata    Json?        // Additional zone data
+  createdBy   String       // Admin/Police user ID
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  // Note: Add PostGIS geometry column via raw SQL migration
+  // ALTER TABLE risk_zones ADD COLUMN geom geometry(MultiPolygon, 4326);
+  // CREATE INDEX idx_risk_zones_geom ON risk_zones USING GIST(geom);
+
+  alerts Alert[]
+
+  @@map("risk_zones")
+  @@index([level, isActive])
+  @@index([createdAt])
+}
+
+enum RiskLevel {
+  LOW      // Level 1
+  MEDIUM   // Level 2
+  HIGH     // Level 3
+  CRITICAL // Level 4
+  EXTREME  // Level 5
+}
+
+// =====================================================
+// ALERT & INCIDENT MANAGEMENT
+// =====================================================
+
+model Alert {
+  id          String      @id @default(cuid())
+  type        AlertType
+  severity    Int         @default(1) // 1-5 scale
+  status      AlertStatus @default(OPEN)
+  touristId   String
+  title       String
+  description String?
+  latitude    Float?
+  longitude   Float?
+  metadata    Json?       // Type-specific data
+  riskZoneId  String?
+  assignedTo  String?     // Police unit/officer ID
+  acknowledgedAt DateTime?
+  acknowledgedBy String?
+  resolvedAt  DateTime?
+  resolvedBy  String?
+  resolution  String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relationships
+  tourist   TouristProfile  @relation(fields: [touristId], references: [id])
+  riskZone  RiskZone?       @relation(fields: [riskZoneId], references: [id])
+  caseFiles CaseFile[]
+  notifications AlertNotification[]
+
+  @@map("alerts")
+  @@index([type, status])
+  @@index([touristId, createdAt])
+  @@index([severity, status])
+  @@index([assignedTo, status])
+}
+
+enum AlertType {
+  PANIC         // Manual emergency button
+  GEOFENCE      // Entered risk zone
+  INACTIVITY    // No movement for extended period
+  DROP          // Sudden altitude/accuracy change
+  OFF_ROUTE     // Deviated from planned route
+  SPEED_ANOMALY // Unusual speed patterns
+  SOS_VOICE     // Voice-activated emergency
+}
+
+enum AlertStatus {
+  OPEN          // New alert
+  ACKNOWLEDGED  // Officer assigned
+  IN_PROGRESS   // Being handled
+  RESOLVED      // Completed
+  FALSE_ALARM   // Dismissed
+  ESCALATED     // Moved to higher authority
+}
+
+model AlertNotification {
+  id        String             @id @default(cuid())
+  alertId   String
+  type      NotificationType
+  recipient String             // Phone/email/user ID
+  status    NotificationStatus @default(PENDING)
+  attempts  Int                @default(0)
+  sentAt    DateTime?
+  metadata  Json?
+  createdAt DateTime           @default(now())
+
+  alert Alert @relation(fields: [alertId], references: [id], onDelete: Cascade)
+
+  @@map("alert_notifications")
+  @@index([alertId])
+  @@index([status, createdAt])
+}
+
+enum NotificationType {
+  SMS
+  EMAIL
+  PUSH
+  WHATSAPP
+  VOICE_CALL
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+  RETRY
+}
+
+// =====================================================
+// CASE MANAGEMENT & E-FIR
+// =====================================================
+
+model CaseFile {
+  id            String     @id @default(cuid())
+  alertId       String?
+  caseNumber    String     @unique
+  title         String
+  description   String
+  status        CaseStatus @default(OPEN)
+  priority      Int        @default(1)
+  officerInCharge String?
+  reportPath    String?    // PDF file path
+  metadata      Json?      // Additional case data
+  createdBy     String
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  closedAt      DateTime?
+
+  alert Alert? @relation(fields: [alertId], references: [id])
+
+  @@map("case_files")
+  @@index([caseNumber])
+  @@index([status, priority])
+  @@index([createdAt])
+}
+
+enum CaseStatus {
+  OPEN
+  UNDER_INVESTIGATION
+  CLOSED
+  ARCHIVED
+}
+
+// =====================================================
+// POLICE & VERIFIER PROFILES
+// =====================================================
+
+model PoliceProfile {
+  id           String  @id @default(cuid())
+  userId       String  @unique
+  badgeNumber  String  @unique
+  rank         String
+  department   String
+  station      String
+  jurisdiction Json?   // GeoJSON area of responsibility
+  isOnDuty     Boolean @default(false)
+  currentLat   Float?
+  currentLng   Float?
+  lastSeen     DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("police_profiles")
+  @@index([badgeNumber])
+  @@index([department, station])
+  @@index([isOnDuty])
+}
+
+model VerifierProfile {
+  id           String  @id @default(cuid())
+  userId       String  @unique
+  organization String
+  location     String
+  licenseNumber String?
+  isApproved   Boolean @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  verifications Verification[]
+
+  @@map("verifier_profiles")
+  @@index([organization])
+  @@index([isApproved])
+}
+
+// =====================================================
+// AUDIT & COMPLIANCE
+// =====================================================
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String   // "CREATE", "READ", "UPDATE", "DELETE"
+  resource  String   // Table/entity name
+  resourceId String? // Record ID
+  oldValues Json?    // Previous state
+  newValues Json?    // New state
+  ipAddress String?
+  userAgent String?
+  metadata  Json?
+  timestamp DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+  @@index([userId, timestamp])
+  @@index([action, resource])
+  @@index([timestamp])
+}
+
+// =====================================================
+// ANOMALY DETECTION & ML FEATURES
+// =====================================================
+
+model AnomalyFeature {
+  id                String   @id @default(cuid())
+  touristId         String
+  windowStart       DateTime
+  windowEnd         DateTime
+  avgSpeed          Float?
+  maxSpeed          Float?
+  distanceTraveled  Float?
+  stationaryTime    Int?     // seconds
+  routeDeviation    Float?   // meters from planned route
+  riskZoneTime      Int?     // seconds in risk zones
+  anomalyScore      Float?   // ML model output
+  createdAt         DateTime @default(now())
+
+  @@map("anomaly_features")
+  @@index([touristId, windowStart])
+  @@index([anomalyScore])
+}
+
+// =====================================================
+// SYSTEM CONFIGURATION
+// =====================================================
+
+model SystemConfig {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  category  String?
+  updatedBy String?
+  updatedAt DateTime @updatedAt
+
+  @@map("system_config")
+  @@index([category])
+}
+
+// =====================================================
+// POST-DEPLOYMENT NOTES
+// =====================================================
+
+// After running `prisma db push`, execute these PostGIS setup commands:
+
+// 1. Enable PostGIS extension:
+// CREATE EXTENSION IF NOT EXISTS postgis;
+
+// 2. Add geometry columns:
+// ALTER TABLE location_pings ADD COLUMN geom geometry(Point, 4326);
+// ALTER TABLE risk_zones ADD COLUMN geom geometry(MultiPolygon, 4326);
+
+// 3. Create spatial indexes:
+// CREATE INDEX idx_location_pings_geom ON location_pings USING GIST(geom);
+// CREATE INDEX idx_risk_zones_geom ON risk_zones USING GIST(geom);
+
+// 4. Create spatial triggers to auto-populate geom columns:
+// CREATE OR REPLACE FUNCTION update_location_geom() RETURNS TRIGGER AS $$
+// BEGIN
+//   NEW.geom := ST_SetSRID(ST_MakePoint(NEW.longitude, NEW.latitude), 4326);
+//   RETURN NEW;
+// END;
+// $$ LANGUAGE plpgsql;
+
+// CREATE TRIGGER location_ping_geom_trigger
+//   BEFORE INSERT OR UPDATE ON location_pings
+//   FOR EACH ROW EXECUTE FUNCTION update_location_geom();
+
+// 5. Materialized views for performance:
+// CREATE MATERIALIZED VIEW tourist_last_locations AS
+// SELECT DISTINCT ON (tourist_id) 
+//   tourist_id, latitude, longitude, timestamp, geom
+// FROM location_pings
+// ORDER BY tourist_id, timestamp DESC;
+
+// CREATE INDEX ON tourist_last_locations (tourist_id);
+// CREATE INDEX ON tourist_last_locations USING GIST(geom);
