@@ -42,11 +42,11 @@ export const useLocation = (): UseLocationReturn => {
       const { status } = await Location.requestForegroundPermissionsAsync();
       const granted = status === 'granted';
       setHasPermission(granted);
-      
+
       if (!granted) {
         setError('Location permission denied');
       }
-      
+
       return granted;
     } catch (err) {
       setError('Failed to request location permission');
@@ -68,7 +68,6 @@ export const useLocation = (): UseLocationReturn => {
 
       const locationResult = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.High,
-        maximumAge: 10000, // 10 seconds
       });
 
       const locationData: LocationData = {
@@ -81,7 +80,8 @@ export const useLocation = (): UseLocationReturn => {
       setLocation(locationData);
       return locationData;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to get location';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to get location';
       setError(errorMessage);
       return null;
     } finally {

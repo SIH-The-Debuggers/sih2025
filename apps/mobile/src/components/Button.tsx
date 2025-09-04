@@ -1,12 +1,19 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import {
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  StyleProp,
+  ViewStyle,
+  TextStyle,
+} from 'react-native';
 
 interface ButtonProps {
   title: string;
   onPress: () => void;
   variant?: 'primary' | 'secondary' | 'danger';
   disabled?: boolean;
-  className?: string;
+  style?: StyleProp<ViewStyle>;
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -14,31 +21,41 @@ const Button: React.FC<ButtonProps> = ({
   onPress,
   variant = 'primary',
   disabled = false,
-  className = '',
+  style = {},
 }) => {
-  const getVariantStyles = () => {
+  const getButtonStyles = (): StyleProp<ViewStyle> => {
+    let variantStyles: StyleProp<ViewStyle>;
+    let textStyles: StyleProp<TextStyle>;
+
     switch (variant) {
       case 'primary':
-        return disabled
-          ? 'bg-gray-400'
-          : 'bg-primary-500 active:bg-primary-600';
+        variantStyles = disabled ? styles.bgGray400 : styles.bgPrimary500;
+        textStyles = styles.textWhite;
+        break;
       case 'secondary':
-        return disabled
-          ? 'bg-gray-300 border-gray-300'
-          : 'bg-white border-gray-300 border active:bg-gray-50';
+        variantStyles = disabled
+          ? [styles.bgGray300, styles.borderGray300]
+          : [styles.bgWhite, styles.borderGray300, styles.border];
+        textStyles = styles.textGray700;
+        break;
       case 'danger':
-        return disabled ? 'bg-gray-400' : 'bg-danger-500 active:bg-danger-600';
+        variantStyles = disabled ? styles.bgGray400 : styles.bgDanger500;
+        textStyles = styles.textWhite;
+        break;
       default:
-        return 'bg-primary-500 active:bg-primary-600';
+        variantStyles = styles.bgPrimary500;
+        textStyles = styles.textWhite;
+        break;
     }
+    return [styles.baseButton, variantStyles, style];
   };
 
-  const getTextStyles = () => {
+  const getTextStyles = (): StyleProp<TextStyle> => {
     switch (variant) {
       case 'secondary':
-        return 'text-gray-700';
+        return [styles.baseText, styles.textGray700];
       default:
-        return 'text-white';
+        return [styles.baseText, styles.textWhite];
     }
   };
 
@@ -46,11 +63,35 @@ const Button: React.FC<ButtonProps> = ({
     <TouchableOpacity
       onPress={onPress}
       disabled={disabled}
-      style={`p-4 rounded-lg justify-center items-center ${getVariantStyles()} ${className}`}
+      style={getButtonStyles()}
     >
-      <Text style={`font-semibold ${getTextStyles()}`}>{title}</Text>
+      <Text style={getTextStyles()}>{title}</Text>
     </TouchableOpacity>
   );
 };
+
+const styles = StyleSheet.create({
+  baseButton: {
+    padding: 16,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  baseText: {
+    fontWeight: '600',
+  },
+  // Background Colors
+  bgPrimary500: { backgroundColor: '#3b82f6' },
+  bgDanger500: { backgroundColor: '#ef4444' },
+  bgGray400: { backgroundColor: '#9ca3af' },
+  bgGray300: { backgroundColor: '#d1d5db' },
+  bgWhite: { backgroundColor: '#ffffff' },
+  // Borders
+  border: { borderWidth: 1 },
+  borderGray300: { borderColor: '#d1d5db' },
+  // Text Colors
+  textWhite: { color: '#ffffff' },
+  textGray700: { color: '#374151' },
+});
 
 export default Button;

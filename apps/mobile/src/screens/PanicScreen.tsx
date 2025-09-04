@@ -24,12 +24,13 @@ interface Props {
 const PanicScreen: React.FC<Props> = ({ navigation }) => {
   const [isAlertSent, setIsAlertSent] = useState(false);
   const [isSending, setIsSending] = useState(false);
-  const { getCurrentLocation, hasPermission, requestPermission } = useLocation();
+  const { getCurrentLocation, hasPermission, requestPermission } =
+    useLocation();
 
   const handlePanicPress = async () => {
     try {
       setIsSending(true);
-      
+
       // Vibrate to provide immediate feedback
       Vibration.vibrate([0, 500, 200, 500]);
 
@@ -100,7 +101,10 @@ const PanicScreen: React.FC<Props> = ({ navigation }) => {
           text: 'Call Now',
           onPress: () => {
             // In a real app, you would use Linking.openURL('tel:emergency-number')
-            Alert.alert('Calling Emergency Services...', 'Feature not available in demo');
+            Alert.alert(
+              'Calling Emergency Services...',
+              'Feature not available in demo'
+            );
           },
         },
         {
@@ -120,7 +124,8 @@ const PanicScreen: React.FC<Props> = ({ navigation }) => {
             Emergency Assistance
           </Text>
           <Text className="text-center text-red-600 text-sm">
-            Press the SOS button to alert emergency services and share your location
+            Press the SOS button to alert emergency services and share your
+            location
           </Text>
         </View>
 
@@ -193,7 +198,8 @@ const PanicScreen: React.FC<Props> = ({ navigation }) => {
       {/* Instructions */}
       <View className="bg-gray-50 p-4 rounded-lg">
         <Text className="text-gray-700 text-sm text-center">
-          In case of extreme emergency, also consider calling local emergency numbers directly
+          In case of extreme emergency, also consider calling local emergency
+          numbers directly
         </Text>
       </View>
     </View>

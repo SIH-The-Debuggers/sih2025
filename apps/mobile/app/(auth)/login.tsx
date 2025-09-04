@@ -9,21 +9,11 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../../App';
-import ApiService from '../services/api';
-import StorageService from '../services/storage';
+import { router } from 'expo-router';
+import ApiService from '../../src/services/api';
+import StorageService from '../../src/services/storage';
 
-type LoginScreenNavigationProp = StackNavigationProp<
-  RootStackParamList,
-  'Login'
->;
-
-interface Props {
-  navigation: LoginScreenNavigationProp;
-}
-
-const LoginScreen: React.FC<Props> = ({ navigation }) => {
+export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -65,17 +55,8 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
         await StorageService.saveAuthToken(response.token);
         await StorageService.saveUserData(response.user);
 
-        // Navigate to home screen - in a real app, you might use a state management solution
-        // or navigation reset to prevent going back to login
-        Alert.alert('Success', 'Login successful!', [
-          {
-            text: 'OK',
-            onPress: () => {
-              // Force app to re-check auth status
-              // In a real app, you might use a context or state management
-            },
-          },
-        ]);
+        // Navigate to tabs
+        router.replace('/(tabs)');
       } else {
         Alert.alert('Error', 'Invalid credentials. Please try again.');
       }
@@ -89,23 +70,32 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      className="flex-1 bg-white"
+      style={{ flex: 1, backgroundColor: 'white' }}
     >
-      <View className="flex-1 justify-center p-6">
+      <View style={{ flex: 1, justifyContent: 'center', padding: 24 }}>
         {/* Header */}
-        <View className="items-center mb-8">
-          <Text className="text-3xl font-bold text-primary-600 mb-2">
+        <View style={{ alignItems: 'center', marginBottom: 32 }}>
+          <Text
+            style={{
+              fontSize: 32,
+              fontWeight: 'bold',
+              color: '#2563eb',
+              marginBottom: 8,
+            }}
+          >
             Tourist Safety
           </Text>
-          <Text className="text-gray-600 text-center">
+          <Text style={{ color: '#6b7280', textAlign: 'center' }}>
             Secure login with email verification
           </Text>
         </View>
 
         {/* Login Form */}
-        <View className="space-y-4">
+        <View style={{ gap: 16 }}>
           <View>
-            <Text className="text-gray-700 mb-2 font-medium">
+            <Text
+              style={{ color: '#374151', marginBottom: 8, fontWeight: '500' }}
+            >
               Email Address
             </Text>
             <TextInput
@@ -116,9 +106,14 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
               autoCapitalize="none"
               autoCorrect={false}
               editable={!otpSent}
-              className={`border rounded-lg p-4 text-base ${
-                otpSent ? 'bg-gray-100 border-gray-300' : 'border-gray-300'
-              }`}
+              style={{
+                borderWidth: 1,
+                borderColor: otpSent ? '#d1d5db' : '#d1d5db',
+                borderRadius: 8,
+                padding: 16,
+                fontSize: 16,
+                backgroundColor: otpSent ? '#f3f4f6' : 'white',
+              }}
             />
           </View>
 
@@ -126,16 +121,19 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             <TouchableOpacity
               onPress={handleSendOtp}
               disabled={isLoading}
-              className={`p-4 rounded-lg ${
-                isLoading
-                  ? 'bg-gray-400'
-                  : 'bg-primary-500 active:bg-primary-600'
-              }`}
+              style={{
+                backgroundColor: isLoading ? '#9ca3af' : '#3b82f6',
+                padding: 16,
+                borderRadius: 8,
+                alignItems: 'center',
+              }}
             >
               {isLoading ? (
                 <ActivityIndicator color="white" />
               ) : (
-                <Text className="text-white text-center font-semibold text-base">
+                <Text
+                  style={{ color: 'white', fontWeight: '600', fontSize: 16 }}
+                >
                   Send OTP
                 </Text>
               )}
@@ -143,7 +141,13 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           ) : (
             <>
               <View>
-                <Text className="text-gray-700 mb-2 font-medium">
+                <Text
+                  style={{
+                    color: '#374151',
+                    marginBottom: 8,
+                    fontWeight: '500',
+                  }}
+                >
                   Verification Code
                 </Text>
                 <TextInput
@@ -152,23 +156,32 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
                   placeholder="Enter 6-digit OTP"
                   keyboardType="number-pad"
                   maxLength={6}
-                  className="border border-gray-300 rounded-lg p-4 text-base"
+                  style={{
+                    borderWidth: 1,
+                    borderColor: '#d1d5db',
+                    borderRadius: 8,
+                    padding: 16,
+                    fontSize: 16,
+                  }}
                 />
               </View>
 
               <TouchableOpacity
                 onPress={handleLogin}
                 disabled={isLoading}
-                className={`p-4 rounded-lg ${
-                  isLoading
-                    ? 'bg-gray-400'
-                    : 'bg-primary-500 active:bg-primary-600'
-                }`}
+                style={{
+                  backgroundColor: isLoading ? '#9ca3af' : '#3b82f6',
+                  padding: 16,
+                  borderRadius: 8,
+                  alignItems: 'center',
+                }}
               >
                 {isLoading ? (
                   <ActivityIndicator color="white" />
                 ) : (
-                  <Text className="text-white text-center font-semibold text-base">
+                  <Text
+                    style={{ color: 'white', fontWeight: '600', fontSize: 16 }}
+                  >
                     Verify & Login
                   </Text>
                 )}
@@ -176,9 +189,9 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
 
               <TouchableOpacity
                 onPress={() => setOtpSent(false)}
-                className="p-2"
+                style={{ padding: 8 }}
               >
-                <Text className="text-primary-500 text-center">
+                <Text style={{ color: '#3b82f6', textAlign: 'center' }}>
                   Change Email Address
                 </Text>
               </TouchableOpacity>
@@ -187,17 +200,29 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
         </View>
 
         {/* Demo Info */}
-        <View className="mt-8 p-4 bg-yellow-50 rounded-lg">
-          <Text className="text-yellow-800 text-sm font-medium mb-1">
+        <View
+          style={{
+            marginTop: 32,
+            padding: 16,
+            backgroundColor: '#fef3c7',
+            borderRadius: 8,
+          }}
+        >
+          <Text
+            style={{
+              color: '#92400e',
+              fontSize: 14,
+              fontWeight: '500',
+              marginBottom: 4,
+            }}
+          >
             Demo Mode
           </Text>
-          <Text className="text-yellow-700 text-sm">
+          <Text style={{ color: '#b45309', fontSize: 14 }}>
             Use any email and OTP "123456" to login
           </Text>
         </View>
       </View>
     </KeyboardAvoidingView>
   );
-};
-
-export default LoginScreen;
+}

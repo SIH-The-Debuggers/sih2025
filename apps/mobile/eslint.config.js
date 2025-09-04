@@ -1,9 +1,5 @@
 module.exports = {
-  extends: [
-    'expo',
-    '@typescript-eslint/recommended',
-    'prettier',
-  ],
+  extends: ['expo', '@typescript-eslint/recommended', 'prettier'],
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint', 'prettier'],
   rules: {

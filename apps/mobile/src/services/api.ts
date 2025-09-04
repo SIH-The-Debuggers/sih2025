@@ -1,8 +1,8 @@
 import Constants from 'expo-constants';
 
-const API_BASE_URL = 
-  Constants.expoConfig?.extra?.apiBaseUrl || 
-  process.env.EXPO_PUBLIC_API_BASE_URL || 
+const API_BASE_URL =
+  Constants.expoConfig?.extra?.apiBaseUrl ||
+  process.env.EXPO_PUBLIC_API_BASE_URL ||
   'https://api.tourist-safety.example.com/v1';
 
 export interface PanicAlertPayload {
@@ -46,7 +46,7 @@ class ApiService {
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
-    
+
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
@@ -57,11 +57,11 @@ class ApiService {
 
     try {
       const response = await fetch(url, config);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       return await response.json();
     } catch (error) {
       console.error('API request failed:', error);
@@ -89,10 +89,12 @@ class ApiService {
   }
 
   // Panic Alert
-  async sendPanicAlert(payload: PanicAlertPayload): Promise<{ success: boolean; alertId: string }> {
+  async sendPanicAlert(
+    payload: PanicAlertPayload
+  ): Promise<{ success: boolean; alertId: string }> {
     // Mock implementation - replace with real API call
     console.log('Sending panic alert:', payload);
-    
+
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({
@@ -123,10 +125,13 @@ class ApiService {
   }
 
   // Update location
-  async updateLocation(lat: number, lng: number): Promise<{ success: boolean }> {
+  async updateLocation(
+    lat: number,
+    lng: number
+  ): Promise<{ success: boolean }> {
     // Mock implementation - replace with real API call
     console.log('Updating location:', { lat, lng });
-    
+
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({ success: true });

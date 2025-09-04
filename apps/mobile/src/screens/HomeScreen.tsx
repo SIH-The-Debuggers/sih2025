@@ -28,7 +28,8 @@ interface UserData {
 const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
-  const { location, getCurrentLocation, hasPermission, requestPermission } = useLocation();
+  const { location, getCurrentLocation, hasPermission, requestPermission } =
+    useLocation();
 
   useEffect(() => {
     loadUserData();
@@ -90,7 +91,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
           <Text className="text-lg font-semibold text-gray-800 mb-4">
             Your Digital Tourist ID
           </Text>
-          
+
           {userData ? (
             <QRCode
               value={JSON.stringify({
@@ -108,9 +109,10 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
               <Text className="text-gray-500">QR Code Unavailable</Text>
             </View>
           )}
-          
+
           <Text className="text-sm text-gray-600 text-center mt-4">
-            Show this QR code to authorities or service providers for identification
+            Show this QR code to authorities or service providers for
+            identification
           </Text>
         </View>
 
@@ -119,7 +121,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
           <Text className="text-lg font-semibold text-gray-800 mb-4">
             Quick Actions
           </Text>
-          
+
           <View className="space-y-3">
             <TouchableOpacity
               onPress={() => navigation.navigate('Panic')}
@@ -171,9 +173,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
           onPress={handleLogout}
           className="bg-gray-500 p-4 rounded-lg active:bg-gray-600"
         >
-          <Text className="text-white text-center font-semibold">
-            Logout
-          </Text>
+          <Text className="text-white text-center font-semibold">Logout</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

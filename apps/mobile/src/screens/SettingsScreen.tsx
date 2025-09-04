@@ -24,7 +24,9 @@ interface Props {
 
 const SettingsScreen: React.FC<Props> = () => {
   const [locationTracking, setLocationTracking] = useState(true);
-  const [emergencyContacts, setEmergencyContacts] = useState<EmergencyContact[]>([]);
+  const [emergencyContacts, setEmergencyContacts] = useState<
+    EmergencyContact[]
+  >([]);
   const [showAddContact, setShowAddContact] = useState(false);
   const [newContact, setNewContact] = useState({
     name: '',
@@ -40,7 +42,7 @@ const SettingsScreen: React.FC<Props> = () => {
     try {
       const trackingEnabled = await StorageService.isLocationTrackingEnabled();
       const contacts = await StorageService.getEmergencyContacts();
-      
+
       setLocationTracking(trackingEnabled);
       setEmergencyContacts(contacts);
     } catch (error) {
@@ -120,7 +122,7 @@ const SettingsScreen: React.FC<Props> = () => {
           <Text className="text-lg font-semibold text-gray-800 mb-4">
             Location Settings
           </Text>
-          
+
           <View className="bg-white p-4 rounded-lg border border-gray-200">
             <View className="flex-row justify-between items-center">
               <View className="flex-1">
@@ -200,13 +202,11 @@ const SettingsScreen: React.FC<Props> = () => {
             About Tourist Safety
           </Text>
           <Text className="text-gray-600 text-sm leading-5">
-            Tourist Safety is part of the Smart Tourist Safety Monitoring system. 
-            Your safety is our priority. For support or emergencies, please contact 
-            local authorities or use the panic button feature.
+            Tourist Safety is part of the Smart Tourist Safety Monitoring
+            system. Your safety is our priority. For support or emergencies,
+            please contact local authorities or use the panic button feature.
           </Text>
-          <Text className="text-gray-500 text-xs mt-2">
-            Version 1.0.0
-          </Text>
+          <Text className="text-gray-500 text-xs mt-2">Version 1.0.0</Text>
         </View>
       </View>
 
@@ -219,7 +219,9 @@ const SettingsScreen: React.FC<Props> = () => {
         <View className="flex-1 bg-white">
           <View className="p-6">
             <View className="flex-row justify-between items-center mb-6">
-              <Text className="text-lg font-semibold">Add Emergency Contact</Text>
+              <Text className="text-lg font-semibold">
+                Add Emergency Contact
+              </Text>
               <TouchableOpacity
                 onPress={() => setShowAddContact(false)}
                 className="p-2"
