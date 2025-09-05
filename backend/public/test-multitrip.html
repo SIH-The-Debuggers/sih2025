@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Trip Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        button { background: #2563eb; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+        .result { margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 5px; }
+        .success { background: #d1fae5; }
+        .error { background: #fee2e2; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Multi-Trip Blockchain Test</h1>
+    <p>Test multiple KYC submissions with the same wallet address</p>
+    
+    <div class="test-section">
+        <h3>Test Scenario: Same Wallet, Multiple Trips</h3>
+        <p>Wallet: <code>0x8e694AC40981DA62B59d220340B01764A98B12A9</code> (your admin wallet)</p>
+        
+        <button onclick="submitTrip('Paris', '2025-12-01', '2025-12-10')">Submit Trip 1: Paris</button>
+        <button onclick="submitTrip('Tokyo', '2026-01-15', '2026-01-25')">Submit Trip 2: Tokyo</button>
+        <button onclick="submitTrip('London', '2026-03-01', '2026-03-10')">Submit Trip 3: London</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:4000';
+        const ADMIN_WALLET = '0x8e694AC40981DA62B59d220340B01764A98B12A9';
+        
+        async function submitTrip(destination, startDate, endDate) {
+            const resultsDiv = document.getElementById('results');
+            
+            const formData = {
+                walletAddress: ADMIN_WALLET,
+                fullName: `Test Tourist - ${destination}`,
+                destination: destination,
+                startDate: startDate,
+                endDate: endDate,
+                minimal: {}
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/kyc`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                const resultDiv = document.createElement('div');
+                if (data.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        ✅ <strong>${destination} Trip Submitted!</strong><br>
+                        🆔 Trip ID: ${data.tripId}<br>
+                        🔗 Anchor Hash: ${data.anchorHash}<br>
+                        ⛓️ TX: ${data.txHash}<br>
+                        📊 Version: ${data.version}
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ <strong>Error:</strong> ${data.error}`;
+                }
+                
+                resultsDiv.appendChild(resultDiv);
+                
+            } catch (error) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'result error';
+                errorDiv.innerHTML = `❌ <strong>Network Error:</strong> ${error.message}`;
+                resultsDiv.appendChild(errorDiv);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -80,21 +80,42 @@ app.post('/api/kyc', async (req: Request, res: Response) => {
   let existing = hasDb ? await prisma.touristIdentity.findUnique({ where: { subjectAddr_tripId: { subjectAddr: walletAddress, tripId } } }) : mem.find(r => r.subjectAddr === walletAddress && r.tripId === tripId);
     let txHash = 'off-chain-only';
     const fastTx = process.env.FAST_TX === 'true';
-    console.log('[KYC] parsed input for', walletAddress, 'fastTx=', fastTx);
+    console.log('[KYC] parsed input for', walletAddress, 'tripId=', tripId, 'fastTx=', fastTx);
+    
     if (enableChain && registry) {
-      console.log('[KYC] chain write start');
-      // Chain semantics (per subject address): first time we see ANY trip for this wallet, do register; otherwise update.
-      // Determine if wallet has ANY anchor yet
-      const anyExistingForWallet = hasDb ? (await prisma.touristIdentity.findFirst({ where: { subjectAddr: walletAddress } })) : mem.find(r => r.subjectAddr === walletAddress);
-      const isFirstForWallet = !anyExistingForWallet;
-      if (isFirstForWallet) {
-  if (fastTx) { const { txHash: h } = await registry.registerNoWait(walletAddress, hash, didUri); txHash = h; }
-  else { const { txHash: h } = await registry.register(walletAddress, hash, didUri); txHash = h; }
-      } else {
-  if (fastTx) { const { txHash: h } = await registry.updateNoWait(walletAddress, hash, didUri); txHash = h; }
-  else { const { txHash: h } = await registry.update(walletAddress, hash, didUri); txHash = h; }
+      console.log('[KYC] chain write start for trip:', tripId);
+      // Use wallet address as subject, encode trip info in DID URI
+      const subjectAddress = walletAddress; // Contract expects address type
+      const tripSpecificDidUri = `${didUri}-${tripId}`; // Trip info in DID URI
+      
+      try {
+        // Always register as new for each trip (same address, different DID URI per trip)
+        if (fastTx) { 
+          const { txHash: h } = await registry.registerNoWait(subjectAddress, hash, tripSpecificDidUri); 
+          txHash = h; 
+        } else { 
+          const { txHash: h } = await registry.register(subjectAddress, hash, tripSpecificDidUri); 
+          txHash = h; 
+        }
+        console.log('[KYC] chain write done tx=', txHash);
+      } catch (error: any) {
+        console.warn('[KYC] register failed, trying update:', error.message);
+        // If register fails, try update
+        try {
+          if (fastTx) { 
+            const { txHash: h } = await registry.updateNoWait(subjectAddress, hash, tripSpecificDidUri); 
+            txHash = h; 
+          } else { 
+            const { txHash: h } = await registry.update(subjectAddress, hash, tripSpecificDidUri); 
+            txHash = h; 
+          }
+          console.log('[KYC] chain update done tx=', txHash);
+        } catch (updateError: any) {
+          console.error('[KYC] both register and update failed:', updateError.message);
+          // Continue without blockchain anchor but log the error
+          txHash = 'blockchain-failed';
+        }
       }
-      console.log('[KYC] chain write done tx=', txHash);
     }
     let record;
     if (hasDb) {
@@ -281,5 +302,8 @@ function dateIso(d: any) {
   try { return new Date(d).toISOString().slice(0,10); } catch { return null; }
 }
 
-const port = process.env.PORT || 4000;
-app.listen(port, () => console.log('Backend up on', port));
+const port = Number(process.env.PORT) || 4000;
+app.listen(port, () => {
+  console.log('Backend up on', port);
+  console.log('Server is running and ready to accept connections');
+});

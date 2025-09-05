@@ -1,3 +1,24 @@
+# Mobile App
+
+Entry point: `App.tsx` (React Navigation).
+
+Removed `expo-router` to avoid blank white screen conflict.
+
+## Run
+```
+npm install
+npm start
+```
+
+If white screen occurs clear cache:
+```
+npx expo start -c
+```
+
+## KYC Flow
+Home -> Submit KYC / Generate QR / Scan & Verify.
+
+Backend expected at: http://localhost:3001
 # Welcome to your Expo app 👋
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).

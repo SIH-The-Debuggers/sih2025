@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tourist KYC Submission</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="text"], input[type="date"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #2563eb;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #1d4ed8;
+        }
+        button:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .success {
+            background-color: #d1fae5;
+            border: 1px solid #10b981;
+            color: #047857;
+        }
+        .error {
+            background-color: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #dc2626;
+        }
+        .loading {
+            text-align: center;
+            color: #666;
+        }
+        .qr-section {
+            margin-top: 30px;
+            text-align: center;
+        }
+        .qr-image {
+            max-width: 300px;
+            margin: 20px auto;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛡️ Tourist KYC Submission</h1>
+        
+        <form id="kycForm">
+            <div class="form-group">
+                <label for="walletAddress">Wallet Address:</label>
+                <input type="text" id="walletAddress" name="walletAddress" 
+                       placeholder="0x..." required>
+            </div>
+            
+            <div class="form-group">
+                <label for="fullName">Full Name:</label>
+                <input type="text" id="fullName" name="fullName" 
+                       placeholder="Enter your full name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="destination">Destination:</label>
+                <input type="text" id="destination" name="destination" 
+                       placeholder="Where are you traveling?" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="startDate">Start Date:</label>
+                <input type="date" id="startDate" name="startDate" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="endDate">End Date:</label>
+                <input type="date" id="endDate" name="endDate" required>
+            </div>
+            
+            <button type="submit" id="submitBtn">Submit KYC & Anchor to Blockchain</button>
+        </form>
+        
+        <div id="result" class="result"></div>
+        
+        <div id="qrSection" class="qr-section" style="display: none;">
+            <h3>Your QR Code</h3>
+            <p>Scan this QR code to verify your identity:</p>
+            <img id="qrImage" class="qr-image" alt="QR Code">
+            <button onclick="generateQR()" id="generateQRBtn">Generate QR Code</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:4000'; // Your backend port from .env
+        
+        document.getElementById('kycForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const resultDiv = document.getElementById('result');
+            
+            // Get form data
+            const formData = {
+                walletAddress: document.getElementById('walletAddress').value,
+                fullName: document.getElementById('fullName').value,
+                destination: document.getElementById('destination').value,
+                startDate: document.getElementById('startDate').value,
+                endDate: document.getElementById('endDate').value,
+                minimal: {}
+            };
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result loading';
+            resultDiv.innerHTML = '🔄 Submitting KYC and anchoring to blockchain...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/kyc`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        ✅ <strong>KYC Submitted Successfully!</strong><br>
+                        🆔 Trip ID: ${data.tripId}<br>
+                        📄 Record ID: ${data.id}<br>
+                        🔗 Anchor Hash: ${data.anchorHash}<br>
+                        ⛓️ Transaction: ${data.txHash}<br>
+                        💾 Storage: ${data.storage}<br>
+                        � DID URI: ${data.didUri || 'Generated'}<br>
+                        <small>Each trip gets a unique blockchain anchor!</small>
+                    `;
+                    
+                    // Show QR section
+                    document.getElementById('qrSection').style.display = 'block';
+                    
+                    // Store wallet for QR generation
+                    window.currentWallet = formData.walletAddress;
+                    
+                } else {
+                    throw new Error(data.error || 'Submission failed');
+                }
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ <strong>Error:</strong> ${error.message}`;
+            }
+            
+            // Reset button
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit KYC & Anchor to Blockchain';
+        });
+        
+        async function generateQR() {
+            const generateBtn = document.getElementById('generateQRBtn');
+            const qrImage = document.getElementById('qrImage');
+            
+            if (!window.currentWallet) {
+                alert('Please submit KYC first');
+                return;
+            }
+            
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Generating...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/qr/${window.currentWallet.toLowerCase()}`);
+                const data = await response.json();
+                
+                if (data.png) {
+                    qrImage.src = data.png;
+                    qrImage.style.display = 'block';
+                } else {
+                    throw new Error(data.error || 'QR generation failed');
+                }
+                
+            } catch (error) {
+                alert(`QR Generation Error: ${error.message}`);
+            }
+            
+            generateBtn.disabled = false;
+            generateBtn.textContent = 'Generate QR Code';
+        }
+        
+        // Set minimum dates to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('startDate').setAttribute('min', today);
+        document.getElementById('endDate').setAttribute('min', today);
+        
+        // Update end date minimum when start date changes
+        document.getElementById('startDate').addEventListener('change', function() {
+            document.getElementById('endDate').setAttribute('min', this.value);
+        });
+    </script>
+</body>
+</html>
