@@ -1,168 +1,135 @@
-# Police Department Portal
+# Turborepo starter
 
-A secure web application for police department management with domain-restricted authentication and OTP verification using Supabase.
+This Turborepo starter is maintained by the Turborepo core team.
 
-## Features
+## Using this example
 
-- 🔐 **Domain-Restricted Authentication**: Only allows login from authorized domains (nic.gov.in, police.gov.in, gmail.com)
-- 📧 **OTP Email Verification**: Secure OTP-based authentication via Supabase
-- 🛡️ **Secure Dashboard**: Protected police management interface
-- 📱 **Responsive Design**: Works on desktop and mobile devices
-- 🎨 **Modern UI**: Clean, professional interface with Tailwind CSS
-- 🔒 **Real Authentication**: Full Supabase integration for production use
+Run the following command:
 
-## Tech Stack
-
-- **Frontend**: Next.js 14, React, TypeScript
-- **Styling**: Tailwind CSS
-- **Authentication**: Supabase Auth
-- **Database**: Supabase
-- **Icons**: Lucide React
-- **Notifications**: React Hot Toast
-
-## Setup Instructions
-
-### 1. Clone and Install Dependencies
-
-```bash
-npm install
+```sh
+npx create-turbo@latest
 ```
 
-### 2. Set up Supabase
+## What's inside?
 
-1. Create a new project at [supabase.com](https://supabase.com)
-2. Go to Settings > API to get your project URL and anon key
-3. Copy `env.example` to `.env.local` and fill in your Supabase credentials:
+This Turborepo includes the following packages/apps:
 
-```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-```
+### Apps and Packages
 
-### 3. Configure Supabase Authentication
+- `docs`: a [Next.js](https://nextjs.org/) app
+- `web`: another [Next.js](https://nextjs.org/) app
+- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
+- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
+- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
 
-In your Supabase dashboard:
+Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
 
-1. Go to Authentication > Settings
-2. Add your site URL: `http://localhost:3000` (for development)
-3. Add redirect URLs:
-   - `http://localhost:3000/auth/callback`
-   - `https://yourdomain.com/auth/callback` (for production)
+### Utilities
 
-### 4. Set up Email Templates (Optional)
+This Turborepo has some additional tools already setup for you:
 
-For custom OTP emails, go to Authentication > Email Templates in Supabase and customize the templates.
+- [TypeScript](https://www.typescriptlang.org/) for static type checking
+- [ESLint](https://eslint.org/) for code linting
+- [Prettier](https://prettier.io) for code formatting
 
-### 5. Run the Development Server
+### Build
 
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-## Security Features
-
-### Domain Restrictions
-
-The application only allows authentication from these domains:
-- `nic.gov.in`
-- `police.gov.in`
-- `gmail.com`
-
-### Authentication Flow
-
-1. **Email/Password Login**: Traditional login for registered users
-2. **OTP Login**: Passwordless authentication via email OTP
-3. **Domain Validation**: All login attempts are validated against allowed domains
-4. **Session Management**: Secure session handling with automatic logout
-
-### Protected Routes
-
-- `/dashboard/*` - Requires authentication
-- `/auth/*` - Redirects authenticated users to dashboard
-
-## Project Structure
+To build all apps and packages, run the following command:
 
 ```
-├── app/
-│   ├── auth/
-│   │   ├── login/page.tsx      # Login page
-│   │   ├── register/page.tsx   # Registration page
-│   │   └── callback/route.ts   # OTP callback handler
-│   ├── dashboard/
-│   │   └── page.tsx            # Main dashboard
-│   ├── globals.css             # Global styles
-│   ├── layout.tsx              # Root layout
-│   └── page.tsx                # Home page
-├── lib/
-│   ├── auth.ts                 # Authentication utilities
-│   └── supabase.ts             # Supabase configuration
-├── middleware.ts               # Route protection
-└── package.json
+cd my-turborepo
+
+# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
+turbo build
+
+# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
+npx turbo build
+yarn dlx turbo build
+pnpm exec turbo build
 ```
 
-## Usage
+You can build a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
 
-### For Users
+```
+# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
+turbo build --filter=docs
 
-1. **Access Request**: Visit the registration page to request access
-2. **Login**: Use either email/password or OTP authentication
-3. **Dashboard**: Access the secure police management interface
-
-### For Administrators
-
-1. **User Management**: Approve/reject access requests in Supabase dashboard
-2. **Domain Management**: Modify allowed domains in `lib/supabase.ts`
-3. **Security Monitoring**: Monitor authentication logs in Supabase
-
-## Deployment
-
-### Vercel (Recommended)
-
-1. Push your code to GitHub
-2. Connect your repository to Vercel
-3. Add environment variables in Vercel dashboard
-4. Deploy
-
-### Other Platforms
-
-1. Build the application: `npm run build`
-2. Start the production server: `npm start`
-3. Set up environment variables
-4. Configure your domain in Supabase
-
-## Environment Variables
-
-```env
-# Required
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-NEXT_PUBLIC_APP_URL=your_app_url
-
-# Optional (for custom email)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your_email@gmail.com
-SMTP_PASS=your_app_password
+# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
+npx turbo build --filter=docs
+yarn exec turbo build --filter=docs
+pnpm exec turbo build --filter=docs
 ```
 
-## Security Considerations
+### Develop
 
-- All authentication is handled by Supabase with industry-standard security
-- Domain restrictions prevent unauthorized access
-- All routes are protected with middleware
-- Session management is handled securely
-- All user activities are logged
+To develop all apps and packages, run the following command:
 
-## Support
+```
+cd my-turborepo
 
-For issues or questions:
-1. Check the Supabase documentation
-2. Review the Next.js documentation
-3. Check the application logs in Supabase dashboard
+# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
+turbo dev
 
-## License
+# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
+npx turbo dev
+yarn exec turbo dev
+pnpm exec turbo dev
+```
 
-This project is for authorized police department use only.
+You can develop a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+
+```
+# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
+turbo dev --filter=web
+
+# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
+npx turbo dev --filter=web
+yarn exec turbo dev --filter=web
+pnpm exec turbo dev --filter=web
+```
+
+### Remote Caching
+
+> [!TIP]
+> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+
+Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+
+By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
+
+```
+cd my-turborepo
+
+# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
+turbo login
+
+# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
+npx turbo login
+yarn exec turbo login
+pnpm exec turbo login
+```
+
+This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+
+Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+
+```
+# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
+turbo link
+
+# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
+npx turbo link
+yarn exec turbo link
+pnpm exec turbo link
+```
+
+## Useful Links
+
+Learn more about the power of Turborepo:
+
+- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
+- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
+- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
+- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
+- [Configuration Options](https://turborepo.com/docs/reference/configuration)
+- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
