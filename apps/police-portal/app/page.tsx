@@ -1,36 +1,9 @@
-'use client'
-
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { Shield, Users, FileText, AlertTriangle, LogIn } from 'lucide-react'
-import { getCurrentUser } from '@/lib/auth'
 import Link from 'next/link'
+import { Shield, Users, FileText, AlertTriangle, LogIn } from 'lucide-react'
 
 export default function HomePage() {
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const router = useRouter()
-
-  useEffect(() => {
-    async function checkUser() {
-      const currentUser = await getCurrentUser()
-      setUser(currentUser)
-      setLoading(false)
-    }
-    
-    checkUser()
-  }, [router])
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-police-blue"></div>
-      </div>
-    )
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-police-blue to-police-dark">
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 to-blue-800">
       {/* Header */}
       <header className="bg-white/10 backdrop-blur-md border-b border-white/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -63,7 +36,7 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link 
               href="/auth/login"
-              className="bg-white text-police-blue px-8 py-3 rounded-lg font-semibold hover:bg-white/90 transition-colors"
+              className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-white/90 transition-colors"
             >
               Access Dashboard
             </Link>
