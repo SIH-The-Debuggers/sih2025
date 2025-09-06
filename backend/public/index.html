@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Tourist KYC Anchor</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+ body { font-family: system-ui, Arial, sans-serif; margin: 2rem; max-width: 780px; }
+ fieldset { border:1px solid #ccc; padding:1rem; margin-bottom:1.5rem; }
+ label { display:block; margin-top:.75rem; font-weight:600; }
+ input, textarea { width:100%; padding:.5rem; margin-top:.25rem; }
+ button { padding:.6rem 1.2rem; cursor:pointer; font-size:1rem; }
+ code { background:#f5f5f5; padding:2px 4px; }
+ #resp { white-space:pre-wrap; background:#f8f8f8; padding:1rem; margin-top:1rem; border:1px solid #ddd; }
+ .qr { margin-top:1.25rem; }
+ .warn { color:#b36b00; font-size:.9rem; }
+</style>
+</head>
+<body>
+<h1>Tourist Digital ID Anchor</h1>
+<p>Submit minimal KYC to store an integrity anchor. <span class="warn">DID & Trip auto-filled.</span></p>
+<form id="kycForm">
+  <fieldset>
+    <legend>KYC Details</legend>
+    <label>Full Name
+      <input name="fullName" required />
+    </label>
+    <label>Destination / Heading To
+      <input name="destination" required />
+    </label>
+    <label>Start Date
+      <input type="date" name="startDate" required />
+    </label>
+    <label>End Date
+      <input type="date" name="endDate" required />
+    </label>
+    <label>Wallet Address
+      <input name="walletAddress" id="walletAddress" placeholder="0x..." required />
+    </label>
+    <label>Emergency Contact (phone)
+      <input name="contactPhone" placeholder="+1.." />
+    </label>
+  </fieldset>
+  <button type="submit">Submit / Anchor</button>
+  <button type="button" id="verifyBtn">Verify</button>
+</form>
+<div id="resp"></div>
+<script>
+const API_BASE = (location.port === '4000') ? '' : 'http://localhost:4000';
+const respBox = document.getElementById('resp');
+
+function renderResult(j){
+  let extra = '';
+  if (j.txHash && j.txHash.startsWith('0x')) extra += `\nEtherscan: https://sepolia.etherscan.io/tx/${j.txHash}`;
+  if (j.didUri) extra += `\nDID: ${j.didUri}`;
+  if (j.tripId) extra += `\nTripID: ${j.tripId}`;
+  respBox.textContent = JSON.stringify(j, null, 2) + extra;
+  if (j.ok && j.id) fetchQR((document.getElementById('walletAddress').value||'').trim());
+}
+
+async function fetchQR(wallet){
+  if(!wallet) return;
+  fetch(API_BASE + '/api/qr/' + wallet)
+    .then(r=>r.json())
+    .then(j=>{
+      if(!j || !j.payload) return;
+      const img = document.createElement('img');
+      img.className='qr';
+      img.src = j.png;
+      img.alt='QR';
+      const pre = document.createElement('pre');
+      pre.textContent = 'QR PAYLOAD:\n' + JSON.stringify(j.payload, null, 2);
+      respBox.appendChild(document.createElement('hr'));
+      respBox.appendChild(img);
+      respBox.appendChild(pre);
+    }).catch(()=>{});
+}
+
+async function verifyNow(){
+  const wallet = (document.getElementById('walletAddress').value||'').trim();
+  if(!wallet) return alert('wallet first');
+  try {
+    const r = await fetch(API_BASE + '/api/verify?walletAddress=' + wallet);
+    const j = await r.json();
+    const pre = document.createElement('pre');
+    pre.textContent = 'VERIFY:\n' + JSON.stringify(j,null,2);
+    respBox.appendChild(document.createElement('hr'));
+    respBox.appendChild(pre);
+  } catch (e){ alert('verify failed'); }
+}
+
+// inject verify button
+const form = document.getElementById('kycForm');
+const verifyBtn = document.getElementById('verifyBtn');
+verifyBtn.onclick = verifyNow;
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fd = new FormData(form);
+  const payload = {
+    walletAddress: fd.get('walletAddress'),
+    fullName: fd.get('fullName'),
+    destination: fd.get('destination'),
+    startDate: fd.get('startDate'),
+    endDate: fd.get('endDate'),
+    minimal: { contacts: [{ type:'phone', value: fd.get('contactPhone') }].filter(c => c.value) },
+    encPIIRef: 'placeholder-local'
+  };
+  respBox.textContent = 'Submitting...';
+  try {
+    const r = await fetch(API_BASE + '/api/kyc', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    const ctype = r.headers.get('content-type') || '';
+    if (!r.ok) { const text = await r.text(); respBox.textContent = `Error (${r.status}): ${text}`; return; }
+    if (!ctype.includes('application/json')) { const text = await r.text(); respBox.textContent = `Non-JSON response: ${text}`; return; }
+    const j = await r.json();
+    renderResult(j);
+  } catch (err) { respBox.textContent = 'Network/Error: ' + err.message; }
+});
+</script>
+</body>
+</html>

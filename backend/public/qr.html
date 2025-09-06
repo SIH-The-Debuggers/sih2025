@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Tourist KYC QR Viewer</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+ body { font-family: system-ui, Arial, sans-serif; margin: 2rem; max-width: 640px; }
+ h1 { margin-top:0; }
+ label { font-weight:600; display:block; margin-top:1rem; }
+ input { width:100%; padding:.55rem; font-size:1rem; margin-top:.35rem; }
+ button { margin-top:1rem; padding:.65rem 1.2rem; font-size:1rem; cursor:pointer; }
+ #out { margin-top:1.5rem; }
+ pre { background:#f8f8f8; padding:1rem; overflow:auto; font-size:.85rem; }
+ img.qr { margin-top:1rem; border:1px solid #ccc; padding:6px; background:#fff; }
+ .hint { font-size:.8rem; color:#555; margin-top:.25rem; }
+ .err { color:#b30000; font-weight:600; }
+</style>
+</head>
+<body>
+<h1>View Tourist KYC QR</h1>
+<p>Enter a wallet address that has already submitted KYC. This page fetches the QR (containing full PII payload + anchor metadata) from <code>/api/qr/:wallet</code>.</p>
+<label>Wallet Address
+  <input id="wallet" placeholder="0x..." />
+</label>
+<button id="fetchBtn">Get QR</button>
+<div class="hint">Data shown is what was hashed (PII + trip context). No private encryption applied here.</div>
+<div id="out"></div>
+<script>
+const API_BASE = (location.port === '4000') ? '' : 'http://localhost:4000';
+const wEl = document.getElementById('wallet');
+const out = document.getElementById('out');
+const btn = document.getElementById('fetchBtn');
+
+async function fetchQR(){
+  const w = (wEl.value||'').trim();
+  out.innerHTML = '';
+  if(!/^0x[a-fA-F0-9]{40}$/.test(w)) { out.innerHTML = '<div class="err">Invalid wallet format</div>'; return; }
+  out.textContent = 'Loading...';
+  try {
+    const r = await fetch(API_BASE + '/api/qr/' + w.toLowerCase());
+    if(!r.ok){ const t = await r.text(); out.innerHTML = '<div class="err">Error '+r.status+': '+t+'</div>'; return; }
+    const j = await r.json();
+    if(!j || !j.payload){ out.textContent = 'No payload returned'; return; }
+    out.textContent = '';
+    const img = document.createElement('img');
+    img.className='qr';
+    img.src = j.png;
+    img.alt='KYC QR';
+    const pre = document.createElement('pre');
+    pre.textContent = JSON.stringify(j.payload, null, 2);
+    const meta = document.createElement('div');
+    meta.innerHTML = '<strong>Anchor Hash:</strong> ' + j.payload.anchor + '<br><strong>DID:</strong> ' + j.payload.did + '<br><strong>Trip:</strong> ' + j.payload.trip + '<br><strong>Version:</strong> ' + j.payload.ver;
+    out.appendChild(img);
+    out.appendChild(meta);
+    out.appendChild(pre);
+  } catch(e){ out.innerHTML = '<div class="err">Network/Parse error: '+e.message+'</div>'; }
+}
+btn.addEventListener('click', fetchQR);
+wEl.addEventListener('keydown', e => { if(e.key==='Enter'){ fetchQR(); }});
+</script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "name": "smart-tourist-safety-blockchain",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "lint": "echo 'Add linter'"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "hardhat": "^2.22.5",
+    "typescript": "^5.4.0",
+    "ts-node": "^10.9.2",
+    "dotenv": "^16.4.5",
+    "@types/node": "^20.12.7",
+    "@types/chai": "^4.3.11",
+    "@types/mocha": "^10.0.6"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.0.2"
+  }
+}
