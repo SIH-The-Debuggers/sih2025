@@ -21,6 +21,7 @@ export default function DashboardPage() {
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: Shield, current: true },
     { name: 'Users', href: '/dashboard/users', icon: Users, current: false },
+    { name: 'Tourists', href: '/dashboard/tourists', icon: Users, current: false },
     { name: 'Cases', href: '/dashboard/cases', icon: FileText, current: false },
     { name: 'Emergency', href: '/dashboard/emergency', icon: AlertTriangle, current: false },
     { name: 'Patrol', href: '/dashboard/patrol', icon: MapPin, current: false },
@@ -28,6 +29,7 @@ export default function DashboardPage() {
 
   const stats = [
     { name: 'Total Officers', value: '156', icon: Users },
+    { name: 'Active Tourists', value: '42', icon: Users },
     { name: 'Active Cases', value: '23', icon: FileText },
     { name: 'Emergency Alerts', value: '3', icon: AlertTriangle },
     { name: 'Patrol Routes', value: '12', icon: MapPin },
