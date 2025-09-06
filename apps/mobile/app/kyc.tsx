@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from "react-native";
+import { ENV } from "../config/env";
 
 export default function KYCFormScreen() {
   const [form, setForm] = useState({
@@ -11,7 +12,7 @@ export default function KYCFormScreen() {
   });
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (key, value) => {
+  const handleChange = (key: string, value: string) => {
     setForm({ ...form, [key]: value });
   };
 
@@ -22,7 +23,7 @@ export default function KYCFormScreen() {
     }
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:3001/api/kyc", {
+      const res = await fetch(`${ENV.API_BASE_URL}/api/kyc`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

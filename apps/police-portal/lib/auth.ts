@@ -29,8 +29,36 @@ export async function signInWithEmail(email: string, password: string) {
     })
 
     if (error) {
-      toast.error(error.message)
-      return { error: error.message }
+      // Handle specific error cases
+      if (error.message.includes('Invalid login credentials')) {
+        // Check if user exists but is not confirmed
+        const { data: userData, error: userError } = await supabase
+          .from('auth.users')
+          .select('email_confirmed_at, created_at')
+          .eq('email', email)
+          .single()
+        
+        if (!userError && userData && !userData.email_confirmed_at) {
+          toast.error('Account exists but email not confirmed. Please check your email or contact admin.')
+          return { error: 'Email not confirmed. Check your email for confirmation link, or disable email confirmation in Supabase settings.' }
+        }
+        
+        toast.error('Invalid email or password. Please check your credentials.')
+        return { error: 'Invalid credentials - please verify your email and password are correct.' }
+      } else if (error.message.includes('Email not confirmed')) {
+        toast.error('Please check your email and click the confirmation link before logging in.')
+        return { error: 'Email not confirmed. Please check your email for a confirmation link.' }
+      } else if (error.message.includes('User not found')) {
+        toast.error('No account found with this email. Please register first.')
+        return { error: 'Account not found. Please register first.' }
+      } else {
+        toast.error(error.message)
+        return { error: error.message }
+      }
+    }
+
+    if (data.user) {
+      toast.success('Login successful!')
     }
 
     return { data, error: null }
@@ -58,13 +86,21 @@ export async function signUpWithEmail(email: string, password: string, metadata?
       email,
       password,
       options: {
-        data: metadata
+        data: metadata,
+        emailRedirectTo: `${window.location.origin}/auth/callback`
       }
     })
 
     if (error) {
       toast.error(error.message)
       return { error: error.message }
+    }
+
+    // Check if email confirmation is required
+    if (data.user && !data.user.email_confirmed_at) {
+      toast.success('Registration successful! Please check your email to confirm your account before logging in.')
+    } else {
+      toast.success('Registration successful! You can now log in.')
     }
 
     return { data, error: null }
