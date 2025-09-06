@@ -76,9 +76,9 @@ export default function RegisterPage() {
             <div className="bg-green-500/20 border border-green-500/30 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
               <Shield className="h-8 w-8 text-green-400" />
             </div>
-            <h2 className="text-2xl font-bold text-white mb-4">Access Request Submitted</h2>
+            <h2 className="text-2xl font-bold text-white mb-4">Registration Successful!</h2>
             <p className="text-white/80 mb-6">
-              Your access request has been submitted for review. You will receive an email confirmation once your account is approved by the administrator.
+              Your account has been created successfully and you can now log in with your credentials.
             </p>
             <Link 
               href="/auth/login"

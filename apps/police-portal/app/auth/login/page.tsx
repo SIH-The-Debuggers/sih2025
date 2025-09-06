@@ -207,6 +207,7 @@ export default function LoginPage() {
             All login attempts are monitored and logged.
           </p>
         </div>
+
       </div>
     </div>
   )
